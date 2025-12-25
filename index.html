@@ -26,24 +26,24 @@
     .court-tag{background:#2a5a3d;color:var(--accent);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;margin-bottom:5px;display:inline-block}
     table{width:100%;border-collapse:collapse}
     td,th{padding:10px 5px;border-bottom:1px solid #2a5a3d;text-align:center}
-    .report-area{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:12px;white-space:pre-wrap;margin-top:10px;border-radius:5px;display:none;border:1px solid #0f0}
+    .report-area{background:#1a1a1a;color:#f39c12;font-family:monospace;padding:15px;font-size:13px;white-space:pre-wrap;margin-top:10px;border-radius:8px;display:none;border:1px dashed #f39c12;line-height:1.2}
 </style>
 </head>
 <body>
 <div class="container">
     <div id="setupPage">
         <div style="text-align:center; margin-bottom:20px;">
-            <h2 style="color:var(--accent); margin-bottom:5px;">羽星王专业转场</h2>
-            <span style="font-size:12px; color:#888;">羽毛球多人数公平对阵系统</span>
+            <h2 style="color:var(--accent); margin-bottom:5px;">👑 羽星王专业转场</h2>
+            <span style="font-size:12px; color:#888;">多人数公平对阵系统 (每人固定8场)</span>
         </div>
-        <div class="step-title">1. 选择人数 (每人打8场)</div>
+        <div class="step-title">1. 选择人数规模</div>
         <select id="pCount" onchange="updateInputs()">
-            <option value="8">8人转</option>
-            <option value="10" selected>10人转 (双场)</option>
-            <option value="11">11人转 (双场)</option>
-            <option value="12">12人转 (双场)</option>
+            <option value="8">8人转 (单/双场混合)</option>
+            <option value="10" selected>10人转 (双场地/20场)</option>
+            <option value="11">11人转 (双场地/22场)</option>
+            <option value="12">12人转 (双场地/24场)</option>
         </select>
-        <div class="step-title">2. 输入姓名</div>
+        <div class="step-title">2. 输入选手姓名</div>
         <div class="card" id="nameInputs"></div>
         <button class="btn" onclick="start()">开启新比赛</button>
         <button id="restoreBtn" class="btn" style="display:none; background:none; border:1px solid var(--accent); color:var(--accent); margin-top:15px;" onclick="restore()">发现未完成记录：点击恢复</button>
@@ -59,11 +59,11 @@
             <div class="card">
                 <table><thead><tr><th>名次</th><th>选手</th><th>胜-负</th><th>净胜</th></tr></thead><tbody id="rankBody"></tbody></table>
             </div>
-            <button class="btn" onclick="generateReport()">生成【羽星王】战报</button>
+            <button class="btn" onclick="generateReport()">生成视觉战报</button>
             <div id="reportArea" class="report-area"></div>
             <button id="copyBtn" class="btn" style="display:none; background:#2a5a3d" onclick="copyReport()">复制战报到微信</button>
             <button id="downloadBtn" class="btn" style="display:none; background:#1d4d34" onclick="downloadReport()">保存战报到手机</button>
-            <button class="btn" style="background:#611;margin-top:30px" onclick="if(confirm('确定清空羽星王当前比赛数据？')){localStorage.removeItem('yxw_data');location.reload();}">重置并开启新一轮</button>
+            <button class="btn" style="background:#611;margin-top:30px" onclick="if(confirm('确定清空当前比赛数据并开启新一轮？')){localStorage.removeItem('yxw_data');location.reload();}">重置所有数据</button>
         </div>
     </div>
 </div>
@@ -81,7 +81,7 @@ function updateInputs() {
     const count = document.getElementById('pCount').value;
     const container = document.getElementById('nameInputs');
     container.innerHTML = '';
-    for(let i=0; i<count; i++) container.innerHTML += `<input type="text" id="p${i}" placeholder="选手 ${i+1}">`;
+    for(let i=0; i<count; i++) container.innerHTML += `<input type="text" id="p${i}" placeholder="选手 ${i+1} 姓名">`;
 }
 
 function start() {
@@ -136,13 +136,35 @@ function calculateRank() {
 
 function generateReport() {
     const stats = calculateRank();
-    let r = `【羽星王 - 转场战报】\n日期: ${new Date().toLocaleDateString()}\n人数: ${pCount}人转\n\n-- 最终排名 --\n`;
-    stats.forEach((s, i) => r += `${i+1}. ${s.name} (${s.w}胜${s.l}负, 净胜${s.nt})\n`);
-    r += `\n-- 详细赛果 --\n`;
+    const now = new Date();
+    const timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    let r = `👑 【 羽 星 王 】 专 场 战 报 👑\n`;
+    r += `━━━━━━━━━━━━━━\n`;
+    r += `📅 时间：${timeStr}\n`;
+    r += `👥 规模：${pCount}人转 (每人8场)\n`;
+    r += `━━━━━━━━━━━━━━\n\n`;
+    
+    r += `🏆 【 荣 誉 排 名 】\n`;
+    stats.forEach((s, i) => {
+        let medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"✨";
+        const winRate = ((s.w / 8) * 100).toFixed(0);
+        r += `${medal} 第${i+1}名：${s.name.padEnd(6, ' ')}\n`;
+        r += `   战绩：${s.w}胜 ${s.l}负 | 净胜：${s.nt>0?'+'+s.nt:s.nt} | 胜率：${winRate}%\n`;
+    });
+    
+    r += `\n🎾 【 详 细 赛 果 】\n`;
     currentMatrix.forEach((m, i) => {
         const s = scores[i];
-        r += `场次${i+1}: ${players[m[0]]}/${players[m[1]]} [${s[0]===null?'-':s[0]}:${s[1]===null?'-':s[1]}] ${players[m[2]]}/${players[m[3]]}\n`;
+        if(s[0] !== null) {
+            const status = s[0] > s[1] ? "胜" : (s[0] < s[1] ? "负" : "平");
+            r += `▫️ 轮${Math.ceil((i+1)/2)}: ${players[m[0]]}/${players[m[1]]} [${s[0]}:${s[1]}] ${players[m[2]]}/${players[m[3]]} (${status})\n`;
+        }
     });
+    
+    r += `\n━━━━━━━━━━━━━━\n`;
+    r += `💡 由《羽星王助手》自动生成`;
+
     const area = document.getElementById('reportArea');
     area.innerText = r; area.style.display = 'block';
     document.getElementById('copyBtn').style.display = 'block';
@@ -150,8 +172,18 @@ function generateReport() {
 }
 
 function copyReport() {
-    navigator.clipboard.writeText(document.getElementById('reportArea').innerText);
-    alert('羽星王战报已复制！可直接粘贴到微信。');
+    const text = document.getElementById('reportArea').innerText;
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert('✨ 战报已生成并复制！\n赶紧去微信群里嘚瑟一下吧~');
+    } catch (err) {
+        alert('复制失败，请手动长按文字复制');
+    }
+    document.body.removeChild(textArea);
 }
 
 function downloadReport() {
