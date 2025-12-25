@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>转场大师-专业版</title>
+<title>羽星王专业转场助手</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="羽星王">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3565/3565261.png">
+
 <style>
     :root { --bg: #0d2a1a; --card: #163d29; --accent: #f39c12; --text: #fff; }
-    body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;margin:0;padding:calc(env(safe-area-inset-top) + 10px) 15px 40px;}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;margin:0;padding:calc(env(safe-area-inset-top) + 10px) 15px 40px;line-height:1.5;}
     .container{max-width:600px;margin:0 auto}
     .card{background:var(--card);border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
     .step-title{border-left:4px solid var(--accent);padding-left:10px;margin:15px 0;font-size:18px;font-weight:bold}
@@ -23,13 +26,17 @@
     .court-tag{background:#2a5a3d;color:var(--accent);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;margin-bottom:5px;display:inline-block}
     table{width:100%;border-collapse:collapse}
     td,th{padding:10px 5px;border-bottom:1px solid #2a5a3d;text-align:center}
-    .report-area{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:12px;white-space:pre-wrap;margin-top:10px;border-radius:5px;display:none}
+    .report-area{background:#000;color:#0f0;font-family:monospace;padding:10px;font-size:12px;white-space:pre-wrap;margin-top:10px;border-radius:5px;display:none;border:1px solid #0f0}
 </style>
 </head>
 <body>
 <div class="container">
     <div id="setupPage">
-        <div class="step-title">1. 选择规模</div>
+        <div style="text-align:center; margin-bottom:20px;">
+            <h2 style="color:var(--accent); margin-bottom:5px;">羽星王专业转场</h2>
+            <span style="font-size:12px; color:#888;">羽毛球多人数公平对阵系统</span>
+        </div>
+        <div class="step-title">1. 选择人数 (每人打8场)</div>
         <select id="pCount" onchange="updateInputs()">
             <option value="8">8人转</option>
             <option value="10" selected>10人转 (双场)</option>
@@ -39,7 +46,7 @@
         <div class="step-title">2. 输入姓名</div>
         <div class="card" id="nameInputs"></div>
         <button class="btn" onclick="start()">开启新比赛</button>
-        <button id="restoreBtn" class="btn" style="display:none; background:none; border:1px solid var(--accent); color:var(--accent)" onclick="restore()">恢复上次未完成比赛</button>
+        <button id="restoreBtn" class="btn" style="display:none; background:none; border:1px solid var(--accent); color:var(--accent); margin-top:15px;" onclick="restore()">发现未完成记录：点击恢复</button>
     </div>
 
     <div id="mainPage" style="display:none">
@@ -52,11 +59,11 @@
             <div class="card">
                 <table><thead><tr><th>名次</th><th>选手</th><th>胜-负</th><th>净胜</th></tr></thead><tbody id="rankBody"></tbody></table>
             </div>
-            <button class="btn" onclick="generateReport()">生成比赛战报</button>
+            <button class="btn" onclick="generateReport()">生成【羽星王】战报</button>
             <div id="reportArea" class="report-area"></div>
-            <button id="copyBtn" class="btn" style="display:none; background:#2a5a3d" onclick="copyReport()">复制战报到剪贴板</button>
-            <button id="downloadBtn" class="btn" style="display:none; background:#1d4d34" onclick="downloadReport()">保存战报文件</button>
-            <button class="btn" style="background:#611;margin-top:30px" onclick="if(confirm('确定重置？数据将清空')){localStorage.removeItem('tennis_git_data');location.reload();}">重置并开启新一轮</button>
+            <button id="copyBtn" class="btn" style="display:none; background:#2a5a3d" onclick="copyReport()">复制战报到微信</button>
+            <button id="downloadBtn" class="btn" style="display:none; background:#1d4d34" onclick="downloadReport()">保存战报到手机</button>
+            <button class="btn" style="background:#611;margin-top:30px" onclick="if(confirm('确定清空羽星王当前比赛数据？')){localStorage.removeItem('yxw_data');location.reload();}">重置并开启新一轮</button>
         </div>
     </div>
 </div>
@@ -101,8 +108,8 @@ function renderMatches() {
 }
 
 function saveScore(mi, ti, val) { scores[mi][ti] = val === '' ? null : parseInt(val); sync(); }
-function sync() { localStorage.setItem('tennis_git_data', JSON.stringify({p:players, s:scores, c:pCount})); }
-function restore() { const d = JSON.parse(localStorage.getItem('tennis_git_data')); players = d.p; scores = d.s; pCount = d.c; currentMatrix = matrices[pCount]; go(); }
+function sync() { localStorage.setItem('yxw_data', JSON.stringify({p:players, s:scores, c:pCount})); }
+function restore() { const d = JSON.parse(localStorage.getItem('yxw_data')); players = d.p; scores = d.s; pCount = d.c; currentMatrix = matrices[pCount]; go(); }
 
 function showTab(t) {
     document.getElementById('matchPage').style.display = t === 'm' ? 'block' : 'none';
@@ -129,7 +136,7 @@ function calculateRank() {
 
 function generateReport() {
     const stats = calculateRank();
-    let r = `【羽星王转场战报】\n日期: ${new Date().toLocaleDateString()}\n\n-- 最终排名 --\n`;
+    let r = `【羽星王 - 转场战报】\n日期: ${new Date().toLocaleDateString()}\n人数: ${pCount}人转\n\n-- 最终排名 --\n`;
     stats.forEach((s, i) => r += `${i+1}. ${s.name} (${s.w}胜${s.l}负, 净胜${s.nt})\n`);
     r += `\n-- 详细赛果 --\n`;
     currentMatrix.forEach((m, i) => {
@@ -144,7 +151,7 @@ function generateReport() {
 
 function copyReport() {
     navigator.clipboard.writeText(document.getElementById('reportArea').innerText);
-    alert('战报已复制！可直接粘贴到微信。');
+    alert('羽星王战报已复制！可直接粘贴到微信。');
 }
 
 function downloadReport() {
@@ -155,8 +162,7 @@ function downloadReport() {
     a.click();
 }
 
-window.onload = () => { updateInputs(); if(localStorage.getItem('tennis_git_data')) document.getElementById('restoreBtn').style.display = 'block'; };
+window.onload = () => { updateInputs(); if(localStorage.getItem('yxw_data')) document.getElementById('restoreBtn').style.display = 'block'; };
 </script>
 </body>
 </html>
-
