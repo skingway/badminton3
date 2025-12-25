@@ -129,7 +129,7 @@ function calculateRank() {
 
 function generateReport() {
     const stats = calculateRank();
-    let r = `【网球转场战报】\n日期: ${new Date().toLocaleDateString()}\n\n-- 最终排名 --\n`;
+    let r = `【羽星王转场战报】\n日期: ${new Date().toLocaleDateString()}\n\n-- 最终排名 --\n`;
     stats.forEach((s, i) => r += `${i+1}. ${s.name} (${s.w}胜${s.l}负, 净胜${s.nt})\n`);
     r += `\n-- 详细赛果 --\n`;
     currentMatrix.forEach((m, i) => {
@@ -151,7 +151,7 @@ function downloadReport() {
     const blob = new Blob([document.getElementById('reportArea').innerText], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `网球战报_${new Date().getTime()}.txt`;
+    a.href = url; a.download = `羽星王战报_${new Date().getTime()}.txt`;
     a.click();
 }
 
@@ -159,3 +159,4 @@ window.onload = () => { updateInputs(); if(localStorage.getItem('tennis_git_data
 </script>
 </body>
 </html>
+
